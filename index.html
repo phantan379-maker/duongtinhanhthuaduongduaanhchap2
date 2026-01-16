@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đường Đua Chân Lý - The Truth Highway</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', 'Rajdhani', monospace;
+      overflow: hidden;
+      background: #000;
+    }
+
+    html, body, .game-wrapper {
+      height: 100%;
+      width: 100%;
+    }
+
+    .game-wrapper {
+      background: linear-gradient(180deg, #0a0e27 0%, #1a1a2e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Start Screen */
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    .neon-title {
+      font-size: 4rem;
+      font-weight: 900;
+      color: #00ff41;
+      text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41;
+      margin-bottom: 1rem;
+      letter-spacing: 3px;
+      animation: flicker 3s infinite alternate;
+    }
+
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41; }
+      20%, 24%, 55% { text-shadow: none; }
+    }
+
+    .highway-subtitle {
+      font-size: 1.5rem;
+      color: #00d9ff;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+    }
+
+    .story-intro {
+      font-size: 1.1rem;
+      color: #ffffff;
+      max-width: 700px;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 1.5rem;
+      border-radius: 15px;
+      border: 2px solid #00ff41;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .start-input {
+      width: 100%;
+      max-width: 450px;
+      padding: 1.2rem 2rem;
+      font-size: 1.2rem;
+      border: 3px solid #00ff41;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #00ff41;
+      margin-bottom: 2rem;
+      font-family: 'Orbitron', monospace;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .start-button {
+      padding: 1.2rem 4rem;
+      font-size: 1.4rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ff0000 0%, #ff6b00 100%);
+      color: white;
+      border: 3px solid #ffff00;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-family: 'Orbitron', monospace;
+    }
+
+    .start-button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+    }
+
+    /* Racing Screen */
+    .racing-screen {
+      display: none;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Highway Road */
+    .highway-container {
+      height: 100%;
+      width: 100%;
+      position: relative;
+      background: #2c2c2c;
+      perspective: 1000px;
+      overflow: hidden;
+    }
+
+    .road {
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 100%;
+      background: repeating-linear-gradient(0deg, #1a1a1a 0px, #1a1a1a 50px, #2c2c2c 50px, #2c2c2c 100px);
+      animation: roadScroll 0.5s linear infinite; /* Normal speed */
+      transform: rotateX(20deg);
+      transform-origin: bottom;
+    }
+
+    .road.slow-motion {
+      animation: roadScroll 4s linear infinite; /* Bullet time */
+    }
+
+    @keyframes roadScroll {
+      from { background-position: 0 0; }
+      to { background-position: 0 100px; }
+    }
+
+    /* Lane Lines */
+    .lane-lines {
+      position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+      display: flex; justify-content: space-around; padding: 0 10%;
+    }
+
+    .lane-line {
+      width: 4px; height: 100%;
+      background: repeating-linear-gradient(0deg, #ffff00 0px, #ffff00 40px, transparent 40px, transparent 80px);
+      animation: laneScroll 0.5s linear infinite;
+    }
+
+    .lane-line.slow-motion { animation: laneScroll 4s linear infinite; }
+
+    @keyframes laneScroll {
+      from { background-position: 0 0; }
+      to { background-position: 0 80px; }
+    }
+
+    /* --- OBSTACLES (ĐÁ) --- */
+    .obstacle {
+      position: absolute;
+      bottom: 40%;
+      transform: translateX(-50%);
+      z-index: 95;
+      display: none;
+    }
+    
+    .rock-graphic {
+      width: 80px;
+      height: 60px;
+      background: #7f8c8d;
+      border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
+      border: 3px solid #2c3e50;
+      box-shadow: inset -10px -10px 0 rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.8);
+      position: relative;
+    }
+    .rock-graphic::after {
+      content: '';
+      position: absolute;
+      top: 15px; left: 20px;
+      width: 15px; height: 8px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 50%;
+    }
+
+    .obstacle.lane-a { left: 15%; }
+    .obstacle.lane-b { left: 38%; }
+    .obstacle.lane-c { left: 62%; }
+    .obstacle.lane-d { left: 85%; }
+
+    /* --- EXPLOSION EFFECT --- */
+    .explosion-container {
+      position: absolute;
+      bottom: 40%;
+      transform: translate(-50%, 50%);
+      z-index: 150;
+      display: none;
+      pointer-events: none;
+    }
+
+    .explosion-container.active { display: block; }
+
+    .explosion-core {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffeb3b 0%, #ff9800 40%, #f44336 70%, transparent 100%);
+      animation: explosionAnim 0.8s ease-out forwards;
+      box-shadow: 0 0 20px #ff9800;
+    }
+
+    .explosion-text {
+      position: absolute;
+      top: -60px; left: 50%;
+      transform: translateX(-50%) scale(0);
+      color: #ffff00;
+      font-weight: 900;
+      font-size: 3rem;
+      font-style: italic;
+      text-shadow: 4px 4px 0 #ff0000;
+      animation: textPop 0.6s ease-out forwards;
+      white-space: nowrap;
+    }
+
+    @keyframes explosionAnim {
+      0% { transform: scale(1); opacity: 1; }
+      30% { transform: scale(8); opacity: 1; }
+      100% { transform: scale(12); opacity: 0; }
+    }
+
+    .explosion-container.lane-a { left: 15%; }
+    .explosion-container.lane-b { left: 38%; }
+    .explosion-container.lane-c { left: 62%; }
+    .explosion-container.lane-d { left: 85%; }
+
+    /* --- REWARD EFFECT (RAU MÁ / NEM CHUA) --- */
+    .reward-container {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 500;
+      overflow: hidden;
+    }
+    
+    .reward-item {
+      position: absolute;
+      bottom: -50px;
+      font-size: 3rem;
+      animation: floatUp 3s ease-out forwards;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(360deg) scale(1.2); opacity: 0; }
+    }
+
+    .reward-message-box {
+      position: absolute;
+      top: 30%; left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: linear-gradient(135deg, #00ff41 0%, #008f24 100%);
+      padding: 1rem 3rem;
+      border: 3px solid #fff;
+      border-radius: 50px;
+      text-align: center;
+      z-index: 600;
+      box-shadow: 0 0 30px rgba(0, 255, 65, 0.8);
+      display: none;
+    }
+    
+    .reward-message-box.active { animation: popInMsg 3s forwards; display: block; }
+
+    @keyframes popInMsg {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      10% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    }
+
+    .reward-title { font-size: 1.5rem; color: #fff; font-weight: bold; margin-bottom: 5px; }
+    .reward-name { font-size: 2.5rem; color: #ffff00; font-weight: 900; text-transform: uppercase; text-shadow: 2px 2px 0 #000; }
+
+    /* Exciter Bike */
+    .bike {
+      position: absolute;
+      bottom: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 5rem;
+      z-index: 100;
+      transition: left 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+    }
+
+    .bike.crashed {
+      animation: shake 0.5s ease-in-out;
+      filter: sepia(1) hue-rotate(-50deg) saturate(5) brightness(0.6);
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(-50%) rotate(0deg); }
+      10%, 90% { transform: translateX(-55%) rotate(-5deg); }
+      20%, 80% { transform: translateX(-45%) rotate(5deg); }
+      30%, 50%, 70% { transform: translateX(-55%) rotate(-5deg); }
+      40%, 60% { transform: translateX(-45%) rotate(5deg); }
+      100% { transform: translateX(-50%) rotate(0deg); }
+    }
+
+    .bike.lane-a { left: 15%; }
+    .bike.lane-b { left: 38%; }
+    .bike.lane-c { left: 62%; }
+    .bike.lane-d { left: 85%; }
+
+    /* HUD */
+    .hud {
+      position: absolute; top: 0; left: 0; right: 0; padding: 2rem;
+      display: flex; justify-content: space-between;
+      z-index: 200; pointer-events: none;
+    }
+
+    .hud-item {
+      background: rgba(0, 0, 0, 0.8);
+      padding: 1rem 2rem;
+      border: 2px solid #00ff41;
+      font-size: 1.3rem;
+      color: #00ff41;
+      font-weight: 700;
+      text-shadow: 0 0 10px #00ff41;
+    }
+
+    /* Question Panel */
+    .question-panel {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.95);
+      padding: 2rem;
+      border: 4px solid #00ff41;
+      width: 800px; max-width: 90%;
+      z-index: 300;
+      display: none;
+      box-shadow: 0 0 40px rgba(0, 255, 65, 0.6);
+      text-align: center;
+    }
+
+    .bullet-time-text {
+      color: #00d9ff; font-size: 1.2rem;
+      text-transform: uppercase; letter-spacing: 3px;
+      margin-bottom: 1rem; animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .question-text { font-size: 1.5rem; color: #fff; margin-bottom: 2rem; line-height: 1.6; }
+    .countdown { font-size: 3rem; color: #ff0000; font-weight: 900; }
+
+    /* Lane Choices */
+    .lane-choices {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+      display: flex; z-index: 250; pointer-events: all;
+    }
+
+    .lane-choice {
+      flex: 1;
+      background: linear-gradient(180deg, rgba(0, 255, 65, 0.1) 0%, rgba(0, 255, 65, 0.3) 100%);
+      border: 1px dashed rgba(0, 255, 65, 0.3);
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 1rem;
+      transition: 0.3s;
+    }
+
+    .lane-choice:hover { background: rgba(0, 255, 65, 0.4); border: 2px solid #00ff41; }
+    .lane-label { font-size: 2.5rem; font-weight: 900; color: #00ff41; text-shadow: 0 0 15px #00ff41; }
+    .lane-answer { color: #fff; text-align: center; margin-top: 10px; font-family: 'Rajdhani'; font-weight: bold;}
+
+    .lane-choice.correct { background: rgba(0, 255, 0, 0.6); border-color: #00ff00; }
+    .lane-choice.incorrect { background: rgba(255, 0, 0, 0.6); border-color: #ff0000; }
+
+    @keyframes textPop {
+      0% { transform: translateX(-50%) scale(0) rotate(-10deg); opacity: 0; }
+      50% { transform: translateX(-50%) scale(1.5) rotate(10deg); opacity: 1; }
+      100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 0; top: -100px; }
+    }
+
+    /* Flashback Overlay */
+    .flashback-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.98);
+      z-index: 400;
+      display: none;
+      flex-direction: column;
+      justify-content: center; align-items: center;
+    }
+
+    .flashback-title { font-size: 3rem; color: #ff0000; text-transform: uppercase; animation: glitch 0.2s infinite; }
+    @keyframes glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(2px, -2px); } 100% { transform: translate(0); } }
+
+    .flashback-scene { font-size: 6rem; margin: 20px 0; }
+    .flashback-text { color: #fff; max-width: 600px; text-align: center; font-size: 1.5rem; line-height: 1.6; border: 2px solid red; padding: 20px; }
+
+    /* Explanation Panel */
+    .explanation-panel {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #000; border: 4px solid #00d9ff;
+      padding: 2rem; width: 800px; max-width: 90%;
+      z-index: 350; display: none; text-align: center;
+    }
+    .explanation-title { font-size: 2rem; margin-bottom: 1rem; font-weight: bold; }
+    .explanation-title.correct { color: #00ff00; }
+    .explanation-title.incorrect { color: #ff0000; }
+    .explanation-text { color: #fff; font-size: 1.2rem; margin-bottom: 2rem; font-family: 'Rajdhani'; }
+
+    .next-button {
+      padding: 1rem 3rem; font-size: 1.2rem; background: #00ff41;
+      border: none; cursor: pointer; font-weight: bold; text-transform: uppercase;
+    }
+
+    /* Results */
+    .results-screen {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; color: #fff;
+    }
+    .results-score { font-size: 3rem; color: #ffff00; margin: 20px 0; text-shadow: 0 0 20px #ffff00; }
+    .results-message { font-size: 1.5rem; max-width: 600px; text-align: center; margin-bottom: 30px; }
+
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+      <div class="neon-title">🏍️ ĐƯỜNG ĐUA CHÂN LÝ</div>
+      <div class="highway-subtitle">THE TRUTH HIGHWAY</div>
+      <div class="story-intro">
+        <p><strong>Nhiệm vụ:</strong> Điều khiển xe Exciter chạy lại hành trình của Huyền Thư.</p>
+        <p><strong>Luật chơi:</strong> Trả lời đúng nhận <strong>Rau Má / Nem Chua</strong>. Trả lời sai đâm <strong>Đá nổ xe</strong>!</p>
+      </div>
+      <input type="text" class="start-input" id="playerNameInput" placeholder="NHẬP TÊN CỦA BẠN..." maxlength="30">
+      <button class="start-button" id="startButton">🚀 KHỞI ĐỘNG XE</button>
+    </div>
+
+    <!-- Racing Screen -->
+    <div class="racing-screen" id="racingScreen">
+      <!-- Road -->
+      <div class="highway-container">
+        <div class="road" id="road">
+          <div class="lane-lines">
+            <div class="lane-line"></div>
+            <div class="lane-line"></div>
+            <div class="lane-line"></div>
+          </div>
+        </div>
+
+        <!-- Reward Container (Nơi chứa rau má / nem chua bay) -->
+        <div id="reward-container" class="reward-container"></div>
+        
+        <!-- Reward Message (Thông báo trúng thưởng) -->
+        <div id="reward-message-box" class="reward-message-box">
+          <div class="reward-title">CHÍNH XÁC! TẶNG BẠN:</div>
+          <div class="reward-name" id="reward-name">LY RAU MÁ</div>
+        </div>
+
+        <!-- Obstacles -->
+        <div id="obstacles-container">
+          <div class="obstacle" id="rock-A"><div class="rock-graphic"></div></div>
+          <div class="obstacle" id="rock-B"><div class="rock-graphic"></div></div>
+          <div class="obstacle" id="rock-C"><div class="rock-graphic"></div></div>
+          <div class="obstacle" id="rock-D"><div class="rock-graphic"></div></div>
+        </div>
+
+        <!-- Explosion Effect -->
+        <div id="explosion" class="explosion-container">
+          <div class="explosion-core"></div>
+          <div class="explosion-text">BÙM!</div>
+        </div>
+
+        <!-- Bike -->
+        <div class="bike" id="bike">🏍️</div>
+      </div>
+
+      <!-- HUD -->
+      <div class="hud">
+        <div class="hud-item" id="levelDisplay">LEVEL 1/7</div>
+        <div class="hud-item hud-score" id="scoreDisplay">ĐIỂM: 0</div>
+      </div>
+
+      <!-- Question Panel -->
+      <div class="question-panel" id="questionPanel">
+        <div class="bullet-time-text">⏱️ BULLET TIME ACTIVATED ⏱️</div>
+        <div class="question-text" id="questionText">Nội dung câu hỏi...</div>
+        <div class="countdown" id="countdown">10</div>
+      </div>
+
+      <!-- Lane Choices -->
+      <div class="lane-choices" id="laneChoices" style="display: none;">
+        <div class="lane-choice" data-lane="A">
+          <div class="lane-label">A</div>
+          <div class="lane-answer" id="answerA"></div>
+        </div>
+        <div class="lane-choice" data-lane="B">
+          <div class="lane-label">B</div>
+          <div class="lane-answer" id="answerB"></div>
+        </div>
+        <div class="lane-choice" data-lane="C">
+          <div class="lane-label">C</div>
+          <div class="lane-answer" id="answerC"></div>
+        </div>
+        <div class="lane-choice" data-lane="D">
+          <div class="lane-label">D</div>
+          <div class="lane-answer" id="answerD"></div>
+        </div>
+      </div>
+
+      <!-- Explanation Panel -->
+      <div class="explanation-panel" id="explanationPanel">
+        <div class="explanation-title" id="explanationTitle"></div>
+        <div class="explanation-text" id="explanationText"></div>
+        <button class="next-button" id="nextButton">TIẾP TỤC ➜</button>
+      </div>
+    </div>
+
+    <!-- Flashback Overlay -->
+    <div class="flashback-overlay" id="flashbackOverlay">
+      <div class="flashback-title">⚠️ XE NỔ! FLASHBACK ⚠️</div>
+      <div class="flashback-scene">🔥🐷🔥</div>
+      <div class="flashback-text">
+        Tai nạn thảm khốc đã xảy ra!<br>
+        Không chỉ hỏng xe, mà còn kéo theo bao hệ lụy đau lòng.
+      </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div class="results-screen" id="resultsScreen">
+      <div class="results-trophy">🏆</div>
+      <div class="results-title">HOÀN THÀNH!</div>
+      <div class="results-score" id="finalScore"></div>
+      <div class="results-message" id="resultsMessage"></div>
+      <button class="restart-button" onclick="location.reload()">🔄 CHƠI LẠI</button>
+    </div>
+
+  </div>
+
+  <script>
+    /* DỮ LIỆU CÂU HỎI */
+    const questions = [
+      {
+        level: 1,
+        question: "Huyền Thư là người vi phạm, nhưng yếu tố nào là 'nguyên nhân gốc' tạo điều kiện cho sai phạm này?",
+        options: { A: "Thư thiếu hiểu biết luật", B: "Bạn bè rủ rê", C: "Gia đình cho phép đi xe khi chưa đủ tuổi", D: "Quản lý lỏng lẻo" },
+        correct: "C",
+        explanation: "🎯 GỐC RỄ NẰM Ở SỰ NUÔNG CHIỀU SAI LẦM CỦA PHỤ HUYNH!\nKhi gia đình cho phép con chưa đủ tuổi sử dụng xe máy, đó chính là nguồn gốc của mọi vi phạm."
+      },
+      {
+        level: 2,
+        question: "Hành động nào là bước ngoặt khiến sự việc từ sai phạm cá nhân chuyển thành hậu quả xã hội?",
+        options: { A: "Lấy xe đi", B: "Nhậu nhẹt", C: "Bỏ chạy sau khi gây tai nạn", D: "Chở quá số người" },
+        correct: "C",
+        explanation: "💥 BỎ CHẠY BIẾN TAI NẠN THÀNH TỘI ÁC!\nĐây là hành động vô cảm, biến một vụ tai nạn dân sự thành án hình sự."
+      },
+      {
+        level: 3,
+        question: "Thông điệp xuyên suốt kịch bản về ATGT học đường là gì?",
+        options: { A: "Học sinh thiếu kiến thức", B: "Cần tăng cường xử phạt", C: "Ý thức chịu chi phối từ Gia đình - Nhà trường - Xã hội", D: "Tai nạn khó tránh" },
+        correct: "C",
+        explanation: "🎓 TAM GIÁC TRÁCH NHIỆM!\nATGT cần sự phối hợp chặt chẽ giữa Gia đình (quản lý), Nhà trường (giáo dục) và Xã hội (luật pháp)."
+      },
+      {
+        level: 4,
+        question: "Ý nghĩa quan trọng nhất của việc xử phạt nghiêm minh học sinh là gì?",
+        options: { A: "Làm học sinh sợ", B: "Hình thành ý thức tự giác lâu dài", C: "Giảm việc cho trường", D: "Thể hiện quyền lực" },
+        correct: "B",
+        explanation: "📚 XỬ PHẠT ĐỂ GIÁO DỤC!\nMục tiêu là giúp học sinh nhận thức hậu quả, từ đó hình thành thói quen tuân thủ luật lệ suốt đời."
+      },
+      {
+        level: 5,
+        question: "Nhà trường tuyên truyền tốt, nhưng gia đình vẫn giao xe cho con chưa đủ tuổi thì sao?",
+        options: { A: "Ý thức tốt lên", B: "Chỉ chấp hành ở trường, dễ tái phạm ngoài xã hội", C: "Tai nạn giảm", D: "Học sinh tự ngoan" },
+        correct: "B",
+        explanation: "🔄 RỐI LOẠN GIÁ TRỊ!\nHọc sinh sẽ bị mâu thuẫn giữa lời thầy cô dạy và hành động của bố mẹ, dẫn đến nhờn luật."
+      },
+      {
+        level: 6,
+        question: "Thay đổi yếu tố then chốt nào để ngăn chặn toàn bộ chuỗi hậu quả trong kịch bản?",
+        options: { A: "Thư không uống rượu", B: "Bạn không rủ", C: "Gia đình KHÔNG cho phép dùng xe máy", D: "CSGT làm gắt" },
+        correct: "C",
+        explanation: "🛡️ CHẶN TỪ GỐC!\nNếu không có xe máy, toàn bộ chuỗi sự kiện tai nạn phía sau sẽ KHÔNG bao giờ xảy ra."
+      },
+      {
+        level: 7,
+        question: "'Đánh người chạy đi chứ không ai đánh người chạy lại' áp dụng thế nào cho Huyền Thư?",
+        options: { A: "Bỏ qua hết", B: "Phạt nghiêm nhưng tạo cơ hội sửa sai", C: "Tình cảm trên luật", D: "Xử nhẹ tay" },
+        correct: "B",
+        explanation: "⚖️ NGHIÊM MINH NHƯNG NHÂN VĂN!\nCần xử phạt để răn đe, nhưng cũng mở đường để em sửa đổi và trở thành người tốt."
+      }
+    ];
+
+    /* LOGIC GAME */
+    let currentLevel = 0;
+    let score = 0;
+    let phase = "start"; 
+    let countdownTimer = null;
+
+    document.getElementById('startButton').addEventListener('click', () => {
+      const name = document.getElementById('playerNameInput').value.trim();
+      if (!name) { alert("Vui lòng nhập tên!"); return; }
+      
+      document.getElementById('startScreen').style.display = 'none';
+      document.getElementById('racingScreen').style.display = 'block';
+      
+      currentLevel = 0;
+      score = 0;
+      startLevel();
+    });
+
+    function startLevel() {
+      if (currentLevel >= questions.length) {
+        showResults();
+        return;
+      }
+
+      const q = questions[currentLevel];
+      
+      document.getElementById('levelDisplay').textContent = `LEVEL ${q.level}/7`;
+      document.getElementById('scoreDisplay').textContent = `ĐIỂM: ${score}`;
+
+      // Reset
+      const bike = document.getElementById('bike');
+      bike.className = 'bike'; 
+      document.querySelectorAll('.obstacle').forEach(o => o.style.display = 'none');
+      document.getElementById('explosion').className = 'explosion-container';
+      document.getElementById('reward-message-box').classList.remove('active');
+      
+      document.getElementById('road').classList.add('slow-motion');
+      document.querySelectorAll('.lane-line').forEach(l => l.classList.add('slow-motion'));
+
+      document.getElementById('questionPanel').style.display = 'block';
+      document.getElementById('laneChoices').style.display = 'none';
+      document.getElementById('explanationPanel').style.display = 'none';
+      
+      document.getElementById('questionText').textContent = q.question;
+
+      document.getElementById('answerA').textContent = q.options.A;
+      document.getElementById('answerB').textContent = q.options.B;
+      document.getElementById('answerC').textContent = q.options.C;
+      document.getElementById('answerD').textContent = q.options.D;
+
+      startCountdown(10, () => {
+        document.getElementById('questionPanel').style.display = 'none';
+        document.getElementById('laneChoices').style.display = 'flex';
+        
+        document.getElementById('road').classList.remove('slow-motion');
+        document.querySelectorAll('.lane-line').forEach(l => l.classList.remove('slow-motion'));
+
+        document.querySelectorAll('.lane-choice').forEach(l => {
+          l.classList.remove('correct', 'incorrect');
+          l.style.pointerEvents = 'auto';
+        });
+
+        phase = "choosing";
+      });
+    }
+
+    function startCountdown(seconds, onComplete) {
+      let timeLeft = seconds;
+      const el = document.getElementById('countdown');
+      el.textContent = timeLeft;
+      
+      if(countdownTimer) clearInterval(countdownTimer);
+      
+      countdownTimer = setInterval(() => {
+        timeLeft--;
+        el.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(countdownTimer);
+          if (onComplete) onComplete();
+        }
+      }, 1000); 
+    }
+
+    // Xử lý khi click chọn làn
+    document.querySelectorAll('.lane-choice').forEach(laneBtn => {
+      laneBtn.addEventListener('click', () => {
+        if (phase !== "choosing") return;
+        phase = "answered";
+        if (countdownTimer) clearInterval(countdownTimer);
+
+        const selected = laneBtn.dataset.lane;
+        const q = questions[currentLevel];
+        const isCorrect = (selected === q.correct);
+
+        document.querySelectorAll('.lane-choice').forEach(l => l.style.pointerEvents = 'none');
+
+        // Logic Đá
+        const lanes = ['A', 'B', 'C', 'D'];
+        lanes.forEach(lane => {
+          if (lane !== q.correct) {
+            const rock = document.getElementById(`rock-${lane}`);
+            rock.classList.add(`lane-${lane.toLowerCase()}`);
+            rock.style.display = 'block';
+          }
+        });
+
+        const bike = document.getElementById('bike');
+        bike.classList.add(`lane-${selected.toLowerCase()}`);
+
+        setTimeout(() => {
+          document.querySelectorAll('.lane-choice').forEach(l => {
+            if (l.dataset.lane === q.correct) l.classList.add('correct');
+            else if (l.dataset.lane === selected && !isCorrect) l.classList.add('incorrect');
+          });
+
+          if (isCorrect) {
+            score += 100;
+            document.getElementById('scoreDisplay').textContent = `ĐIỂM: ${score}`;
+            
+            // --- KÍCH HOẠT HIỆU ỨNG TẶNG QUÀ (RAU MÁ / NEM CHUA) ---
+            triggerReward();
+
+            setTimeout(() => showExplanation(true, q.explanation), 2500); // Chờ quà rơi xong mới hiện giải thích
+          } else {
+            // SAI -> Đụng đá -> Nổ
+            bike.classList.add('crashed'); 
+            
+            const explosion = document.getElementById('explosion');
+            explosion.classList.add(`lane-${selected.toLowerCase()}`); 
+            explosion.classList.add('active'); 
+            
+            setTimeout(() => {
+              showFlashback(() => {
+                showExplanation(false, q.explanation);
+              });
+            }, 1200);
+          }
+        }, 500);
+      });
+    });
+
+    // HÀM TẶNG QUÀ MỚI
+    function triggerReward() {
+      const isRauMa = Math.random() > 0.5; // Random 50/50
+      const rewardName = isRauMa ? "1 LY RAU MÁ 🥤" : "1 CHỤC NEM CHUA 🌯";
+      const rewardEmoji = isRauMa ? "🌿" : "🌯"; // Icon đại diện
+      
+      // Hiện thông báo
+      const msgBox = document.getElementById('reward-message-box');
+      document.getElementById('reward-name').textContent = rewardName;
+      document.getElementById('reward-name').style.color = isRauMa ? "#00ff41" : "#ff006e"; // Rau má xanh, Nem chua hồng
+      msgBox.classList.add('active');
+
+      // Tạo mưa vật phẩm
+      const container = document.getElementById('reward-container');
+      container.innerHTML = ''; // Xóa cũ
+      
+      for (let i = 0; i < 20; i++) {
+        const item = document.createElement('div');
+        item.classList.add('reward-item');
+        item.textContent = rewardEmoji;
+        
+        // Random vị trí và tốc độ bay
+        item.style.left = Math.random() * 100 + "%";
+        item.style.animationDuration = (2 + Math.random() * 2) + "s"; // 2s đến 4s
+        item.style.fontSize = (2 + Math.random() * 2) + "rem"; // To nhỏ khác nhau
+        
+        container.appendChild(item);
+      }
+    }
+
+    function showFlashback(callback) {
+      const fb = document.getElementById('flashbackOverlay');
+      fb.style.display = 'flex';
+      setTimeout(() => {
+        fb.style.display = 'none';
+        if (callback) callback();
+      }, 3500); 
+    }
+
+    function showExplanation(isCorrect, text) {
+      document.getElementById('laneChoices').style.display = 'none';
+      const panel = document.getElementById('explanationPanel');
+      const title = document.getElementById('explanationTitle');
+      
+      panel.style.display = 'block';
+      title.textContent = isCorrect ? "✅ QUÁ ĐỈNH! LÁI XE AN TOÀN" : "❌ TAI NẠN KINH HOÀNG!";
+      title.className = isCorrect ? "explanation-title correct" : "explanation-title incorrect";
+      document.getElementById('explanationText').textContent = text;
+    }
+
+    document.getElementById('nextButton').addEventListener('click', () => {
+      currentLevel++;
+      startLevel();
+    });
+
+    function showResults() {
+      document.getElementById('racingScreen').style.display = 'none';
+      document.getElementById('resultsScreen').style.display = 'flex';
+      
+      let msg = "";
+      if (score >= 700) msg = "TUYỆT VỜI! Bạn là một Bộ trưởng Giao thông tương lai!";
+      else if (score >= 400) msg = "KHÁ TỐT! Bạn đã hiểu rõ vấn đề, hãy cẩn thận hơn.";
+      else msg = "CẦN CỐ GẮNG! Hãy nhớ rằng sai lầm trên đường không thể làm lại.";
+      
+      document.getElementById('finalScore').textContent = `${score}/700 ĐIỂM`;
+      document.getElementById('resultsMessage').textContent = msg;
+    }
+  </script>
+</body>
+</html>
