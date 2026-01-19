@@ -437,7 +437,7 @@
     }
     .restart-button:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(255,0,0,0.8); }
 
-    /* LUCKY WHEEL - UPGRADED */
+    /* LUCKY WHEEL - FIXED VERSION */
     .wheel-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: radial-gradient(ellipse at center, rgba(50,0,100,0.95) 0%, rgba(0,0,0,0.98) 100%);
@@ -457,8 +457,13 @@
       font-family: 'Rajdhani'; letter-spacing: 3px;
     }
     
+    /* FIX: Wheel container with fixed aspect ratio */
     .wheel-container { 
-      position: relative; width: 380px; height: 380px; margin-bottom: 30px; 
+      position: relative; 
+      width: min(380px, 80vmin);
+      height: min(380px, 80vmin);
+      margin-bottom: 30px;
+      aspect-ratio: 1 / 1;
     }
     
     .wheel-pointer {
@@ -479,65 +484,73 @@
       text-shadow: 0 0 10px #ffff00;
     }
     
+    /* FIX: Wheel with SVG-based segments for perfect circles */
     .wheel {
-      width: 100%; height: 100%; border-radius: 50%;
-      border: 15px solid;
-      border-color: #ffd700 #ff8c00 #ffd700 #ff8c00;
-      position: relative; overflow: hidden;
+      width: 100%; 
+      height: 100%; 
+      border-radius: 50%;
+      position: relative; 
+      overflow: hidden;
       transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
       box-shadow: 
         0 0 0 8px #8B4513,
         0 0 0 12px #ffd700,
         0 0 60px rgba(255, 215, 0, 0.8), 
         inset 0 0 50px rgba(0,0,0,0.3);
+      /* Force GPU rendering for smoother animation */
+      will-change: transform;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
     }
     
-    /* Chỉ có 2 phần: Rau Má và Nem Chua */
-    .wheel-bg {
-      width: 100%; height: 100%;
-      background: conic-gradient(
-       #e74c3c 0deg 60deg,    /* Đỏ */
-        #2ecc71 60deg 120deg,  /* Xanh lá */
-        #3498db 120deg 180deg, /* Xanh dương */
-        #9b59b6 180deg 240deg, /* Tím */
-        #f39c12 240deg 300deg, /* Cam */
-        #1abc9c 300deg 360deg  /* Xanh ngọc */
-      );
-      border-radius: 50%;
+    /* FIX: Use SVG for perfect wheel segments */
+    .wheel-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
     
     /* Logo Tài Xỉu ở tâm */
     .wheel-center {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 100px; height: 100px; 
+      width: 25%; height: 25%; 
       background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%);
       border-radius: 50%; 
       border: 5px solid #ffd700;
       display: flex; align-items: center; justify-content: center; flex-direction: column;
       box-shadow: 0 0 30px rgba(255,215,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
       overflow: hidden;
+      z-index: 5;
     }
     .wheel-center-logo {
+      font-size: 2rem;
       width: 90px; height: 90px;
       border-radius: 50%;
       background: url('https://media.discordapp.net/attachments/1433133504635338944/1462134611415929035/5vAnQtPSRUw9ZAAAAAElFTkSuQmCC.png?ex=696d1678&is=696bc4f8&hm=8ac055d32666400450209c804b08b031a3e001f4148fc0f4bddd681a5595b894&=&format=webp&quality=lossless') center/cover no-repeat;
       /* Fallback nếu ảnh không load */
       display: flex; align-items: center; justify-content: center;
     }
-    .wheel-center-text {
-      font-size: 0.6rem; color: #ffd700; font-weight: bold;
-      text-align: center; line-height: 1.2;
-      position: absolute;
-      text-shadow: 0 0 5px #000;
-    }
     
-    .wheel-labels { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .wheel-labels { 
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+      pointer-events: none;
+    }
     .segment-label {
-      position: absolute; top: 50%; left: 50%; transform-origin: 0 0;
-      width: 42%; text-align: right; padding-right: 5px; box-sizing: border-box;
-      font-weight: 900; font-size: 1rem; color: #fff;
+      position: absolute; 
+      top: 50%; 
+      left: 50%;
+      width: 38%;
+      text-align: right;
+      padding-right: 5px;
+      font-weight: 900; 
+      font-size: clamp(0.6rem, 2vmin, 1rem);
+      color: #fff;
       text-shadow: 2px 2px 4px #000, 0 0 10px rgba(0,0,0,0.8);
-      display: flex; align-items: center; justify-content: flex-end;
+      display: flex; 
+      align-items: center; 
+      justify-content: flex-end;
+      transform-origin: 0% 50%;
+      white-space: nowrap;
     }
     
     .spin-btn {
@@ -619,18 +632,44 @@
       .neon-title, .main-title-intro { font-size: 2.5rem; }
       .question-text { font-size: 1.1rem; }
       .lane-answer { font-size: 0.9rem; }
-      .wheel-container { width: 300px; height: 300px; }
-      .segment-label { font-size: 0.85rem; }
-      .wheel-center { width: 80px; height: 80px; }
+      .wheel-container { width: min(300px, 75vmin); height: min(300px, 75vmin); }
+      .segment-label { font-size: clamp(0.5rem, 1.8vmin, 0.85rem); }
       .wheel-header { font-size: 2rem; }
+      .spin-btn { padding: 15px 40px; font-size: 1.3rem; }
     }
   </style>
 </head>
 <body>
   <div class="game-wrapper">
-    <!-- !!! DÁN LINK NHẠC VÀO DÒNG DƯỚI ĐÂY !!! -->
+    <!-- AUDIO ELEMENTS -->
+    <!-- Nhạc nền intro -->
+    <audio id="introMusic" loop>
+      <source src="nhacnen.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Nhạc khi bấm khởi động xe -->
+    <audio id="startEngineMusic">
+      <source src="rizz.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Nhạc nền game -->
     <audio id="bgMusic" loop>
-        <source src="nhacnen.mp3" type="audio/mpeg">
+      <source src="megalovania.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Nhạc quay vòng quay -->
+    <audio id="spinMusic">
+      <source src="nhacxoso.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Nhạc trả lời đúng -->
+    <audio id="correctMusic">
+      <source src="tiengdit.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Nhạc trả lời sai -->
+    <audio id="wrongMusic">
+      <source src="vinhbietcu.mp3" type="audio/mpeg">
     </audio>
 
     <!-- CINEMATIC OVERLAYS -->
@@ -654,7 +693,7 @@
       <div class="neon-title">🏍️ ĐƯỜNG ĐUA CHÂN LÝ</div>
       <div class="story-intro">
         <p><strong>📖 CÂU CHUYỆN:</strong> Huyền Thư - một học sinh cấp 3 - được bố mẹ mua xe máy đi học dù chưa đủ tuổi. Một đêm đi chơi cùng bạn bè, cô gây ra tai nạn kinh hoàng...</p>
-        <p>🎮 <strong>LUẬT CHƠI:</strong> Trả lời đúng → Quay <span class="reward">VÒNG QUAY MAY MẮN</span> (100% trúng tiền)</p>
+        <p>🎮 <strong>LUẬT CHƠI:</strong> Trả lời đúng → Quay <span class="reward">VÒNG QUAY MAY MẮN</span> (100% trúng tiền)</p>
         <p>❌ Trả lời sai → <strong style="color:#ff0000">XE NỔ!</strong> Xem lại hậu quả đau thương.</p>
       </div>
       <input type="text" class="start-input" id="playerNameInput" placeholder="👤 NHẬP TÊN CỦA BẠN..." maxlength="30">
@@ -744,7 +783,17 @@
       <div class="wheel-container">
         <div class="wheel-pointer"></div>
         <div class="wheel" id="luckyWheel">
-          <div class="wheel-bg"></div>
+          <!-- SVG Wheel for perfect rendering -->
+          <svg class="wheel-svg" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <clipPath id="wheelClip">
+                <circle cx="100" cy="100" r="100"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#wheelClip)" id="wheelSegments">
+              <!-- Segments will be generated by JS -->
+            </g>
+          </svg>
           <div class="wheel-center">
             <div class="wheel-center-logo">🎲</div>
           </div>
@@ -790,14 +839,14 @@
       { level: 7, question: "Cách giải quyết nhân văn và hiệu quả nhất cho trường hợp Huyền Thư là gì?", options: { A: "Bỏ qua vì còn nhỏ tuổi", B: "Phạt nghiêm minh nhưng tạo cơ hội sửa sai", C: "Phạt nặng nhất có thể", D: "Xử nhẹ để không ảnh hưởng tương lai" }, correct: "B", explanation: "⚖️ NGHIÊM MINH NHƯNG NHÂN VĂN! Đó là bài học mà sau này em cần phải ghi nhớ. Xử phạt đúng luật nhưng vẫn tạo cơ hội cho học sinh sửa sai, học tập và trở thành người tốt." }
     ];
 
-    // Chỉ có 4 phần: 2 Rau Má + 2 Nem Chua (100% trúng 1 trong 2)
+    // Wheel items
     const wheelItems = [
-      { text: "🌿 RAU MÁ", type: "real", icon: "🌿" },
-      { text: "🌯 NEM CHUA", type: "real", icon: "🌯" },
-      { text: "🍗 KHÔ GÀ ĐỘ MIXI", type: "real", icon: "🍗" },
-      { text: "🌯 NEM CHUA", type: "real", icon: "🌯" },
-      { text: "💎 1 TỈ ", type: "fake" },
-      { text: "🐷 XÚC XÍCH HEO CAO BẰNG", type: "real", icon: "🐷" },
+      { text: "🌿 RAU MÁ", type: "real", icon: "🌿", color: "#2ecc71" },
+      { text: "🌯 NEM CHUA", type: "real", icon: "🌯", color: "#e74c3c" },
+      { text: "🍗 KHÔ GÀ", type: "real", icon: "🍗", color: "#3498db" },
+      { text: "🍬 KẸO CON", type: "real", icon: "🍬", color: "#9b59b6" },
+      { text: "💎 1 TỈ", type: "fake", icon: "💎", color: "#f39c12" },
+      { text: "🐷 XÚC XÍCH HEO CAO BẰNG", type: "real", icon: "🐷", color: "#1abc9c" },
     ];
 
     /* ========== GAME STATE ========== */
@@ -807,14 +856,72 @@
     let countdownTimer = null;
     let wheelRotation = 0;
 
-    /* ========== MUSIC CONTROL ========== */
-    function playMusic() {
-      const music = document.getElementById('bgMusic');
-      if (music.paused) {
-        music.volume = 0.5; // Âm lượng 50%
-        music.play().catch(e => console.log("Không thể tự động phát nhạc (cần tương tác người dùng): ", e));
+    /* ========== AUDIO MANAGER ========== */
+    const AudioManager = {
+      intro: document.getElementById('introMusic'),
+      startEngine: document.getElementById('startEngineMusic'),
+      bg: document.getElementById('bgMusic'),
+      spin: document.getElementById('spinMusic'),
+      correct: document.getElementById('correctMusic'),
+      wrong: document.getElementById('wrongMusic'),
+      
+      playIntro() {
+        this.stopAll();
+        this.intro.volume = 0.4;
+        this.intro.currentTime = 0;
+        this.intro.play().catch(e => console.log("Audio blocked:", e));
+      },
+      
+      playStartEngine() {
+        this.intro.pause();
+        this.startEngine.volume = 0.6;
+        this.startEngine.currentTime = 0;
+        this.startEngine.play().catch(e => console.log("Audio blocked:", e));
+        
+        // After engine sound, play bg music
+        setTimeout(() => {
+          this.playBg();
+        }, 2000);
+      },
+      
+      playBg() {
+        this.bg.volume = 0.3;
+        this.bg.currentTime = 0;
+        this.bg.play().catch(e => console.log("Audio blocked:", e));
+      },
+      
+      playSpin() {
+        this.spin.volume = 0.5;
+        this.spin.currentTime = 0;
+        this.spin.play().catch(e => console.log("Audio blocked:", e));
+      },
+      
+      stopSpin() {
+        this.spin.pause();
+        this.spin.currentTime = 0;
+      },
+      
+      playCorrect() {
+        this.correct.volume = 0.6;
+        this.correct.currentTime = 0;
+        this.correct.play().catch(e => console.log("Audio blocked:", e));
+      },
+      
+      playWrong() {
+        this.wrong.volume = 0.6;
+        this.wrong.currentTime = 0;
+        this.wrong.play().catch(e => console.log("Audio blocked:", e));
+      },
+      
+      stopAll() {
+        this.intro.pause();
+        this.startEngine.pause();
+        this.bg.pause();
+        this.spin.pause();
+        this.correct.pause();
+        this.wrong.pause();
       }
-    }
+    };
 
     /* ========== INIT ========== */
     function init() {
@@ -822,23 +929,60 @@
       initCityBackground();
       initSpeedLines();
       
-      // Bấm nút mới chuyển sang màn hình nhập tên
+      // Play intro music when page loads
+      document.addEventListener('click', function initAudio() {
+        AudioManager.playIntro();
+        document.removeEventListener('click', initAudio);
+      }, { once: true });
+      
+      // Skip intro button
       document.getElementById('skipIntro').addEventListener('click', () => {
-        playMusic(); // PHÁT NHẠC
+        AudioManager.playIntro();
         document.getElementById('cinematicIntro').style.display = 'none';
         document.getElementById('startScreen').style.display = 'flex';
       });
     }
 
     function initWheel() {
+      const segmentsContainer = document.getElementById('wheelSegments');
       const labelsContainer = document.getElementById('wheelLabels');
+      
+      segmentsContainer.innerHTML = '';
       labelsContainer.innerHTML = '';
-      const segAngle = 360 / wheelItems.length; // 90 độ mỗi phần
+      
+      const numSegments = wheelItems.length;
+      const segAngle = 360 / numSegments;
+      
+      // Create SVG segments for perfect circle
       wheelItems.forEach((item, index) => {
+        const startAngle = index * segAngle - 90; // Start from top
+        const endAngle = startAngle + segAngle;
+        
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+        
+        const x1 = 100 + 100 * Math.cos(startRad);
+        const y1 = 100 + 100 * Math.sin(startRad);
+        const x2 = 100 + 100 * Math.cos(endRad);
+        const y2 = 100 + 100 * Math.sin(endRad);
+        
+        const largeArc = segAngle > 180 ? 1 : 0;
+        
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M100,100 L${x1},${y1} A100,100 0 ${largeArc},1 ${x2},${y2} Z`);
+        path.setAttribute('fill', item.color);
+        path.setAttribute('stroke', '#fff');
+        path.setAttribute('stroke-width', '1');
+        segmentsContainer.appendChild(path);
+        
+        // Create label
         const label = document.createElement('div');
         label.className = 'segment-label';
         label.textContent = item.text;
-        label.style.transform = `rotate(${index * segAngle + (segAngle/2)}deg) translate(0px, -50%)`;
+        
+        // Position label in center of segment
+        const midAngle = startAngle + segAngle / 2 + 90;
+        label.style.transform = `rotate(${midAngle}deg) translateY(-50%)`;
         labelsContainer.appendChild(label);
       });
     }
@@ -869,9 +1013,12 @@
 
     /* ========== GAME FLOW ========== */
     document.getElementById('startButton').addEventListener('click', () => {
-      playMusic(); // PHÁT NHẠC LẦN NỮA ĐỂ CHẮC CHẮN
       const name = document.getElementById('playerNameInput').value.trim();
       if (!name) { alert("Vui lòng nhập tên để bắt đầu!"); return; }
+      
+      // Play engine start sound
+      AudioManager.playStartEngine();
+      
       document.getElementById('startScreen').style.display = 'none';
       document.getElementById('racingScreen').style.display = 'block';
       currentLevel = 0; score = 0;
@@ -972,6 +1119,7 @@
           });
 
           if (isCorrect) {
+            AudioManager.playCorrect();
             score += 100;
             document.getElementById('scoreDisplay').textContent = `💎 ĐIỂM: ${score}`;
             triggerConfetti();
@@ -980,6 +1128,7 @@
               openLuckyWheel(q.explanation);
             }, 500);
           } else {
+            AudioManager.playWrong();
             bike.classList.add('crashed');
             triggerFlash();
             
@@ -1007,12 +1156,15 @@
         spinBtn.disabled = true;
         spinBtn.textContent = "ĐANG QUAY...";
         
-        // Chọn ngẫu nhiên 1 trong 4 phần (đều là thật)
+        // Play spin music
+        AudioManager.playSpin();
+        
+        // Choose random winning item
         const realItems = wheelItems.filter(item => item.type === "real");
         const winningItem = realItems[Math.floor(Math.random() * realItems.length)];
         const targetIndex = wheelItems.indexOf(winningItem);
         
-        const segmentAngle = 360 / wheelItems.length; // 90 độ
+        const segmentAngle = 360 / wheelItems.length;
         const stopAngle = -(targetIndex * segmentAngle + segmentAngle/2);
         const extraSpins = 360 * 8;
         const jitter = Math.floor(Math.random() * 30) - 15;
@@ -1028,6 +1180,8 @@
         wheelRotation = totalRotation;
 
         setTimeout(() => {
+          AudioManager.stopSpin();
+          AudioManager.playCorrect();
           overlay.style.display = 'none';
           triggerReward(winningItem.text, winningItem.icon);
           setTimeout(() => {
@@ -1122,4 +1276,3 @@
   </script>
 </body>
 </html>
-
